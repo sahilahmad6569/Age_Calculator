@@ -1,0 +1,413 @@
+The files of my age calculator app in Flutter are: 
+
+main.dart:
+import 'package:flutter/material.dart';
+import 'splash_screen.dart';
+import 'home_screen.dart';
+import 'display.dart';
+
+void main() {
+  runApp(MyApp());
+}
+
+class MyApp extends StatelessWidget {
+  const MyApp({Key? key}) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      debugShowCheckedModeBanner: false,
+      initialRoute: '/',
+      routes: {
+        '/': (context) => SplashScreen(),
+        '/home': (context) => HomeScreen(),
+        '/display': (context) => Display(name: "", age: 0),
+      },
+    );
+  }
+}
+
+splash_screen.dart:
+
+import 'package:flutter/material.dart';
+
+class SplashScreen extends StatefulWidget {
+  @override
+  _SplashScreenState createState() => _SplashScreenState();
+}
+
+class _SplashScreenState extends State<SplashScreen> {
+  @override
+  void initState() {
+    super.initState();
+    navigateToMainScreen();
+  }
+
+  void navigateToMainScreen() async {
+    await Future.delayed(
+        Duration(seconds: 2)); // Set the duration of the splash screen
+
+    Navigator.pushReplacementNamed(
+        context, '/home'); // Navigates to the main app screen
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      body: Center(
+        child: Image.asset(
+            'assets/images/splash.jpg'), // Replace with your splash screen image path
+      ),
+    );
+  }
+}
+
+
+home_screen.dart:
+
+import 'package:flutter/material.dart';
+import 'display.dart';
+import 'calculate.dart';
+
+class HomeScreen extends StatefulWidget {
+  const HomeScreen({Key? key}) : super(key: key);
+
+  @override
+  State<HomeScreen> createState() => _HomeScreenState();
+}
+
+class _HomeScreenState extends State<HomeScreen> {
+  final TextEditingController _nameController = TextEditingController();
+  final TextEditingController _dateController = TextEditingController();
+  bool _showAgeResult = false;
+
+  void _calculateAge(BuildContext context) {
+    String name = _nameController.text.trim();
+    String dateStr = _dateController.text.trim();
+
+    if (name.isNotEmpty && dateStr.isNotEmpty) {
+      int age = AgeCalculator.calculateAge(dateStr);
+      if (age != -1) {
+        _navigateToDisplay(context, name, age);
+      } else {
+        _showErrorDialog(
+            context, 'Invalid date format. Please use dd/mm/yyyy.');
+      }
+    } else {
+      _showErrorDialog(context, 'Please enter your name and birth date.');
+    }
+  }
+
+  void _navigateToDisplay(BuildContext context, String name, int age) async {
+    setState(() {
+      _showAgeResult = true;
+    });
+
+    await Future.delayed(Duration(milliseconds: 500));
+
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => Display(
+          name: name,
+          age: age,
+        ),
+      ),
+    );
+
+    setState(() {
+      _showAgeResult = false;
+    });
+  }
+
+  void _showErrorDialog(BuildContext context, String message) {
+    showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: Text('Error'),
+          content: Text(message),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: Text('OK'),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: Colors.black,
+      appBar: AppBar(
+        title: Text("Age Calculator"),
+        backgroundColor: Colors.deepPurple, // Change the color of the app bar
+      ),
+      body: Center(
+        child: SingleChildScrollView(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              SizedBox(height: 20), // Add some spacing at the top
+              Hero(
+                tag: 'pattern',
+                child: Image.asset(
+                  "assets/images/pattern.gif",
+                  height: 200, // Change the size of the gif image
+                ),
+              ),
+              SizedBox(
+                  height: 20), // Add some spacing between image and text fields
+              Padding(
+                padding: const EdgeInsets.all(16.0),
+                child: TextFormField(
+                  controller: _nameController,
+                  style: TextStyle(
+                    color: Colors.white,
+                  ), // Change the color of the text field text
+                  decoration: InputDecoration(
+                    labelText: 'Enter your name',
+                    border: OutlineInputBorder(
+                      borderSide: BorderSide(
+                        color: Colors.white, // Custom border color
+                      ),
+                    ),
+                    enabledBorder: OutlineInputBorder(
+                      borderSide: BorderSide(
+                        color: Colors.white, // Custom border color
+                      ),
+                    ),
+                    focusedBorder: OutlineInputBorder(
+                      borderSide: BorderSide(
+                        color: Colors
+                            .deepPurple, // Custom border color when the field is focused
+                      ),
+                    ),
+                    labelStyle: TextStyle(
+                      color: Colors.white,
+                    ), // Change the color of the label
+                  ),
+                ),
+              ),
+              Padding(
+                padding: const EdgeInsets.all(16.0),
+                child: TextFormField(
+                  controller: _dateController,
+                  style: TextStyle(
+                    color: Colors.white,
+                  ), // Change the color of the text field text
+                  decoration: InputDecoration(
+                    labelText: 'Enter your birth date (dd/mm/yyyy)',
+                    border: OutlineInputBorder(
+                      borderSide: BorderSide(
+                        color: Colors.white, // Custom border color
+                      ),
+                    ),
+                    enabledBorder: OutlineInputBorder(
+                      borderSide: BorderSide(
+                        color: Colors.white, // Custom border color
+                      ),
+                    ),
+                    focusedBorder: OutlineInputBorder(
+                      borderSide: BorderSide(
+                        color: Colors
+                            .deepPurple, // Custom border color when the field is focused
+                      ),
+                    ),
+                    labelStyle: TextStyle(
+                      color: Colors.white,
+                    ), // Change the color of the label
+                  ),
+                ),
+              ),
+              SizedBox(
+                  height:
+                      20), // Add some spacing between text fields and button
+              ElevatedButton(
+                onPressed: () => _calculateAge(context),
+                style: ElevatedButton.styleFrom(
+                  primary: Colors
+                      .deepPurple, // Change the color of the elevated button
+                  textStyle: TextStyle(
+                    color: Colors.white, // Change the color of the button text
+                  ),
+                  elevation: 4, // Add a subtle elevation effect
+                ),
+                child: _showAgeResult
+                    ? CircularProgressIndicator(
+                        valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                      )
+                    : Text('Calculate'),
+              ),
+              SizedBox(height: 20), // Add some spacing at the bottom
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+
+calculate.dart:
+
+class AgeCalculator {
+  static int calculateAge(String dateStr) {
+    List<String> dateParts = dateStr.split('/');
+    if (dateParts.length != 3) {
+      return -1; // Invalid date format
+    }
+
+    int day = int.tryParse(dateParts[0]) ?? -1;
+    int month = int.tryParse(dateParts[1]) ?? -1;
+    int year = int.tryParse(dateParts[2]) ?? -1;
+
+    if (day < 1 || day > 31 || month < 1 || month > 12 || year < 1) {
+      return -1; // Invalid date components
+    }
+
+    final currentDate = DateTime.now();
+    DateTime birthDate = DateTime(year, month, day);
+
+    int age = currentDate.year - birthDate.year;
+    if (currentDate.month < birthDate.month ||
+        (currentDate.month == birthDate.month &&
+            currentDate.day < birthDate.day)) {
+      age--;
+    }
+    return age;
+  }
+}
+
+
+display.dart:
+
+import 'package:flutter/material.dart';
+import 'package:confetti/confetti.dart';
+
+class DisplayArguments {
+  final String name;
+  final int age;
+
+  DisplayArguments({required this.name, required this.age});
+}
+
+class Display extends StatefulWidget {
+  final String name;
+  final int age;
+
+  Display({required this.name, required this.age});
+
+  @override
+  _DisplayState createState() => _DisplayState();
+}
+
+class _DisplayState extends State<Display> {
+  late ConfettiController _confettiController;
+
+  @override
+  void initState() {
+    super.initState();
+    _confettiController =
+        ConfettiController(duration: const Duration(seconds: 3));
+    _confettiController.play();
+  }
+
+  @override
+  void dispose() {
+    _confettiController.dispose();
+    super.dispose();
+  }
+
+  void _navigateBack() {
+    _confettiController.stop();
+    Navigator.pop(context);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final String name = widget.name;
+    final int age = widget.age;
+
+    return Scaffold(
+      appBar: AppBar(
+        title: Text("Age Calculator"),
+        backgroundColor: Colors.deepPurple,
+      ),
+      backgroundColor: Colors.black,
+      body: Stack(
+        children: [
+          Center(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                Hero(
+                  tag: 'pattern',
+                  child: Image.asset(
+                    "assets/images/pattern.gif",
+                    height: 300,
+                  ),
+                ),
+                SizedBox(height: 20),
+                Text(
+                  "Hello, $name!",
+                  style: TextStyle(
+                    fontFamily: 'Merriweather',
+                    fontSize: 24,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.white,
+                  ),
+                ),
+                SizedBox(height: 10),
+                Text(
+                  "Your age is $age years.",
+                  style: TextStyle(
+                    fontFamily: 'Merriweather',
+                    fontSize: 18,
+                    color: Colors.white,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          ConfettiWidget(
+            confettiController: _confettiController,
+            blastDirectionality: BlastDirectionality.explosive,
+            emissionFrequency: 0.05,
+            numberOfParticles: 20,
+            gravity: 0.1,
+            colors: const [
+              Colors.green,
+              Colors.blue,
+              Colors.pink,
+              Colors.orange,
+            ],
+          ),
+          Padding(
+            padding: const EdgeInsets.only(bottom: 80),
+            child: Align(
+              alignment: Alignment.bottomCenter,
+              child: ElevatedButton(
+                onPressed: _navigateBack,
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.deepPurple,
+                  textStyle: TextStyle(
+                    color: Colors.white,
+                  ),
+                  elevation: 4,
+                ),
+                child: Text('Go Back'),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+I have a soud effect already stored in the assets/sounds folder named burst.mp3, I want that as soon as the user hits the calculate button and the display screen is opened the asset sound is played on the display screen. Remember that it is an asset sound not a URL.
